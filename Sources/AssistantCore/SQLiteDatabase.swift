@@ -115,7 +115,7 @@ final class SQLiteStatement {
     }
 
     func bind(_ index: Int32, _ value: Data) {
-        value.withUnsafeBytes { bytes in
+        _ = value.withUnsafeBytes { bytes in
             sqlite3_bind_blob(
                 handle,
                 index,

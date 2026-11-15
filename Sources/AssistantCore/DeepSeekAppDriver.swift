@@ -140,7 +140,7 @@ public actor DeepSeekAppDriver {
             if let answer = answer(in: snapshot, expectedToken: expectedToken) {
                 try await bridge.wait(seconds: configuration.stabilityInterval)
                 let stable = try await bridge.snapshot(bundleID: configuration.bundleID)
-                if answer(in: stable, expectedToken: expectedToken) != nil {
+                if self.answer(in: stable, expectedToken: expectedToken) != nil {
                     return DeepSeekTurnResult(
                         success: true,
                         answer: answer,
