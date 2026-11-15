@@ -102,11 +102,13 @@ public actor QianniuDriver {
             else {
                 throw QianniuDriverError.replyInputNotFound
             }
-            try await bridge.type(
+            guard focusedInput.value.isEmpty else {
+                throw QianniuDriverError.typedReplyNotVerified
+            }
+            try await bridge.typeOnKeyboard(
                 text: trimmed,
                 x: focusedInput.centerX,
-                y: focusedInput.centerY,
-                clear: true
+                y: focusedInput.centerY
             )
             let typed = try await bridge.snapshot(bundleID: Self.bundleID)
             if typed.nodes.contains(where: {
