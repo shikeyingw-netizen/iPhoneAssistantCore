@@ -104,7 +104,9 @@ public enum PinduoduoPageParser {
                 .map(\.label)
                 .filter { $0 != marker }
             let storeName = labels.first(where: {
-                $0.count <= 20 && !$0.contains("秒后超时")
+                $0.count <= 20
+                    && $0 != "店铺"
+                    && !$0.contains("秒后超时")
             }) ?? "未知店铺"
             let preview = labels
                 .filter { $0 != storeName }

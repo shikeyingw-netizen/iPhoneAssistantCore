@@ -341,7 +341,7 @@ public enum CommerceMessageDetector {
                         && !matches($0.label, timerPattern)
                         && $0.label != "店铺"
                         && $0.centerY < body.centerY
-                        && (timerY == nil || $0.centerY < timerY!)
+                        && (timerY == nil || $0.centerY <= timerY! + 2)
                 }
                 .max(by: { $0.centerY < $1.centerY })?
                 .label

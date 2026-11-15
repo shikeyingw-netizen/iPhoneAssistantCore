@@ -87,7 +87,7 @@ public struct AccessibilitySnapshot: Equatable, Sendable {
 
 public enum AccessibilityTreeParser {
     private static let nodeExpression = try? NSRegularExpression(
-        pattern: #"^( *)([A-Za-z]+)(?:, (.*))?, \{\{(-?\d+), (-?\d+)\}, \{(\d+), (\d+)\}\}$"#,
+        pattern: #"^( *)([A-Za-z]+[0-9]*)(?:, (.*))?, \{\{(-?\d+), (-?\d+)\}, \{(\d+), (\d+)\}\}$"#,
         options: []
     )
 
