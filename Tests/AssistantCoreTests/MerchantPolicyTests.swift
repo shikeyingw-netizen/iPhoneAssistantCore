@@ -5,7 +5,7 @@ final class MerchantPolicyTests: XCTestCase {
     func testCustomerServiceTestMessageHasDeterministicReply() {
         XCTAssertEqual(
             MerchantPolicy.deterministicReply(
-                "客服自动回复测试2，请回复测试成功"
+                for: "客服自动回复测试2，请回复测试成功"
             ),
             "客服测试成功"
         )
