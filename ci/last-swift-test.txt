@@ -1,22 +1,48 @@
-Run: https://github.com/shikeyingw-netizen/iPhoneAssistantCore/actions/runs/43708556770
-Commit: bc2ee90d925c6c454f06d8534fe1676d879ced63
+Run: https://github.com/shikeyingw-netizen/iPhoneAssistantCore/actions/runs/43708976301
+Commit: 9bd329189e397432e965c349abbb1ee8008dd0cb
 
-10:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/SQLiteDatabase.swift:118:15: warning: result of call to 'withUnsafeBytes' is unused
-14:    |               `- warning: result of call to 'withUnsafeBytes' is unused
-18:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/SQLiteDatabase.swift:118:15: warning: result of call to 'withUnsafeBytes' is unused
-22:    |               `- warning: result of call to 'withUnsafeBytes' is unused
-26:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/SQLiteDatabase.swift:118:15: warning: result of call to 'withUnsafeBytes' is unused
-30:    |               `- warning: result of call to 'withUnsafeBytes' is unused
-34:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/SQLiteDatabase.swift:118:15: warning: result of call to 'withUnsafeBytes' is unused
-38:    |               `- warning: result of call to 'withUnsafeBytes' is unused
-43:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/DeepSeekAppDriver.swift:143:20: error: cannot call value of non-function type 'String'
-47:    |                    `- error: cannot call value of non-function type 'String'
-51:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/DeepSeekAppDriver.swift:143:20: error: cannot call value of non-function type 'String'
-55:    |                    `- error: cannot call value of non-function type 'String'
-59:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/DeepSeekAppDriver.swift:143:20: error: cannot call value of non-function type 'String'
-63:    |                    `- error: cannot call value of non-function type 'String'
-67:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/DeepSeekAppDriver.swift:143:20: error: cannot call value of non-function type 'String'
-71:    |                    `- error: cannot call value of non-function type 'String'
-75:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/DeepSeekAppDriver.swift:143:20: error: cannot call value of non-function type 'String'
-79:    |                    `- error: cannot call value of non-function type 'String'
-86:error: fatalError
+27:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:96:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+31:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+41:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:98:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+45:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+55:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:102:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+59:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+69:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:103:22: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+73:    |                      `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+83:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:108:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+87:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+97:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:110:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+101:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+111:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:114:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+115:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+125:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:118:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+129:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+139:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:122:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+143:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+153:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:124:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+157:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+167:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:96:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+171:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+181:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:98:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+185:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+195:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:102:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+199:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+209:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:103:22: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+213:    |                      `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+223:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:108:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+227:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+237:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:110:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+241:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+251:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:114:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+255:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+265:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:118:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+269:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+279:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:122:14: warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+283:    |              `- warning: instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+293:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:124:14: warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+297:    |              `- warning: instance method 'unlock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in the Swift 6 language mode
+365:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/SQLiteTaskQueueTests.swift:60: error: -[AssistantCoreTests.SQLiteTaskQueueTests testClaimHonorsPriority] : XCTAssertEqual failed: ("Optional("normal")") is not equal to ("Optional("high")")
+366:Test Case '-[AssistantCoreTests.SQLiteTaskQueueTests testClaimHonorsPriority]' failed (0.649 seconds).
+367:Test Suite 'SQLiteTaskQueueTests' failed at 2026-11-15 11:28:39.006.
+369:Test Suite 'iPhoneAssistantCorePackageTests.xctest' failed at 2026-11-15 11:28:39.006.
+371:Test Suite 'Selected tests' failed at 2026-11-15 11:28:39.006.
