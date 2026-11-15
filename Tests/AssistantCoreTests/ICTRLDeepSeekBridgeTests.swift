@@ -120,7 +120,7 @@ private actor FakeICTRLRPC: ICTRLRPCInvoking {
         case .idle:
             inputValue = ""
         case .typed, .sent:
-            inputValue = " value: '\(typedText)'"
+            inputValue = " value: '\(typedText)',"
         }
         let answer = phase == .sent
             ? "  Other, label: '客服测试成功', {{24, 214}, {342, 28}}\n"
