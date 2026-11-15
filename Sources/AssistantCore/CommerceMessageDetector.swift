@@ -221,7 +221,17 @@ public enum CommerceMessageDetector {
     public static func pinduoduoMessages(
         _ snapshot: AccessibilitySnapshot
     ) -> [DetectedCommerceMessage] {
-        var output = pinduoduoOverlayMessages(snapshot)
+        let overlays = pinduoduoOverlayMessages(snapshot)
+        if !overlays.isEmpty {
+            var output = overlays
+            appendLatestPinduoduoMessage(
+                from: snapshot,
+                to: &output
+            )
+            return unique(output)
+        }
+
+        var output: [DetectedCommerceMessage] = []
         for row in PinduoduoPageParser.pendingRows(snapshot) {
             let text = clean(row.preview)
             guard !text.isEmpty,
@@ -252,6 +262,14 @@ public enum CommerceMessageDetector {
             )
         }
 
+        appendLatestPinduoduoMessage(from: snapshot, to: &output)
+        return unique(output)
+    }
+
+    private static func appendLatestPinduoduoMessage(
+        from snapshot: AccessibilitySnapshot,
+        to output: inout [DetectedCommerceMessage]
+    ) {
         if let latest = latestPinduoduoCustomerMessage(snapshot) {
             let key = StableIdentifier.hexDigest(
                 "pinduoduo",
@@ -270,7 +288,6 @@ public enum CommerceMessageDetector {
                 )
             )
         }
-        return unique(output)
     }
 
     public static func qianniuMessages(
