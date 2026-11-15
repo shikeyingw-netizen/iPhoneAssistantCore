@@ -35,8 +35,6 @@ public enum PinduoduoSurface: Equatable, Sendable {
 }
 
 public enum PinduoduoPageParser {
-    private static let countdownPattern =
-        #"(?:已等待(?:\s*\d+\s*(?:秒|分钟))?|待回复|(?:约\s*)?\d+\s*(?:秒|分钟)后超时|即将超时)"#
     private static let otherStoreHeaderPattern =
         #"^其他店铺消息(?:\s*\((\d+)\))?$"#
     private static let anySectionHeaderPattern = #"^[^|]{1,24}\(\d+\)$"#
@@ -80,10 +78,7 @@ public enum PinduoduoPageParser {
         var seen: Set<String> = []
         var coveredStores: Set<String> = []
         for markerNode in snapshot.nodes {
-            guard let marker = firstMatch(
-                markerNode.label,
-                pattern: countdownPattern
-            ) else {
+            guard let marker = pendingMarker(in: markerNode.label) else {
                 continue
             }
             let nearby = snapshot.nodes.filter {
@@ -146,8 +141,9 @@ public enum PinduoduoPageParser {
             let stores = sectionNodes.filter {
                 $0.kind == "StaticText"
                     && $0.x >= 70
-                    && $0.x < 240
+                    && $0.x < 140
                     && $0.width >= 30
+                    && $0.width <= 130
                     && $0.label.count <= 20
             }
             for store in stores {
@@ -260,6 +256,25 @@ public enum PinduoduoPageParser {
             return nil
         }
         return String(text[resultRange])
+    }
+
+    private static func pendingMarker(in label: String) -> String? {
+        if label.contains("已等待") {
+            return firstMatch(
+                label,
+                pattern: #"已等待(?:\s*\d+\s*(?:秒|分钟))?"#
+            ) ?? "已等待"
+        }
+        if label.contains("待回复") {
+            return "待回复"
+        }
+        if label.contains("即将超时") {
+            return "即将超时"
+        }
+        return firstMatch(
+            label,
+            pattern: #"(?:约\s*)?\d+\s*(?:秒|分钟)后超时"#
+        )
     }
 
     private static func matches(_ text: String, pattern: String) -> Bool {
