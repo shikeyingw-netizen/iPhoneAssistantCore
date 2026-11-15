@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p ci
+          report="${RUNNER_TEMP}/last-swift-test.txt"
           {
             echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo "Commit: ${GITHUB_SHA}"
@@ -66,12 +66,13 @@ jobs:
             grep -nE 'error:|fatal error:|FAILED|failed|warning:' swift-test.log \
               | tail -n 500 \
               || true
-          } > ci/last-swift-test.txt
+          } > "${report}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan ci-reports
+          git rm -rf .
+          mkdir -p ci
+          cp "${report}" ci/last-swift-test.txt
           git add ci/last-swift-test.txt
-          if git diff --cached --quiet; then
-            exit 0
-          fi
           git commit -m "Update Swift CI failure report [skip ci]"
-          git push
+          git push --force origin HEAD:ci-reports
