@@ -72,25 +72,39 @@ public enum CommerceBannerTextParser {
         _ items: [VisibleTextItem],
         capturedAt: Date
     ) -> [DetectedCommerceMessage] {
-        let headers = items.filter {
+        var platforms: [CommercePlatform] = []
+        if items.contains(where: {
             $0.y < 180
-                && $0.confidence >= 0.3
-                && (
-                    $0.label == "拼多多商家版"
-                        || $0.label == "千牛"
-                )
+                && $0.label == "拼多多商家版"
+        }) || items.contains(where: {
+            $0.y < 130
+                && $0.x < 70
+                && $0.label == "商家版"
+        }) {
+            platforms.append(.pinduoduo)
         }
-        return headers.compactMap { header in
-            let platform: CommercePlatform =
-                header.label == "拼多多商家版" ? .pinduoduo : .qianniu
+        if items.contains(where: {
+            $0.y < 110
+                && (
+                    $0.label == "千牛"
+                        || $0.label == "千牛商家版"
+                )
+        }) {
+            platforms.append(.qianniu)
+        }
+
+        return platforms.compactMap { platform in
             let bodyItems = items
                 .filter {
-                    $0.y > header.y + 3
-                        && $0.y < header.y + 58
-                        && $0.x >= 60
+                    $0.y >= 50
+                        && $0.y < 125
+                        && $0.x >= 65
                         && $0.x < 360
-                        && $0.width >= 15
-                        && $0.label != header.label
+                        && $0.width >= 30
+                        && $0.label != "拼多多商家版"
+                        && $0.label != "千牛商家版"
+                        && $0.label != "商家版"
+                        && $0.label != "**"
                         && !isTimestamp($0.label)
                 }
                 .sorted { $0.y < $1.y }
@@ -113,7 +127,7 @@ public enum CommerceBannerTextParser {
             )
             let actionY = bodyItems.map {
                 $0.y + $0.height / 2
-            }.min() ?? header.y + header.height / 2
+            }.min() ?? 80
             return DetectedCommerceMessage(
                 platform: platform,
                 storeName: "\(platform.displayName)待核实店铺",

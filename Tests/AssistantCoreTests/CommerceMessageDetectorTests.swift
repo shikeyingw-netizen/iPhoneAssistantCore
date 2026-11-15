@@ -154,6 +154,55 @@ final class CommerceMessageDetectorTests: XCTestCase {
         XCTAssertEqual(messages[0].actionX, 195)
     }
 
+    func testHeadlessBannerUsesMerchantBadgeAsPlatformMarker() {
+        let items = [
+            VisibleTextItem(
+                label: "**",
+                x: 72,
+                y: 58,
+                width: 13,
+                height: 7,
+                confidence: 0.3
+            ),
+            VisibleTextItem(
+                label: "商家版",
+                x: 32,
+                y: 85,
+                width: 18,
+                height: 7,
+                confidence: 1
+            ),
+            VisibleTextItem(
+                label: "客服自动回复测试4，请回复测试成功",
+                x: 71,
+                y: 74,
+                width: 250,
+                height: 18,
+                confidence: 0.5
+            ),
+            VisibleTextItem(
+                label: "1分钟前",
+                x: 316,
+                y: 54,
+                width: 48,
+                height: 15,
+                confidence: 1
+            ),
+        ]
+
+        let messages = CommerceBannerTextParser.parse(
+            items,
+            capturedAt: Date(timeIntervalSince1970: 1_800_000_000)
+        )
+
+        XCTAssertEqual(messages.count, 1)
+        XCTAssertEqual(messages[0].platform, .pinduoduo)
+        XCTAssertEqual(
+            messages[0].text,
+            "客服自动回复测试4，请回复测试成功"
+        )
+    }
+
     private func notificationSource() -> String {
         """
         Application, label: ' ', {{0, 0}, {390, 844}}
