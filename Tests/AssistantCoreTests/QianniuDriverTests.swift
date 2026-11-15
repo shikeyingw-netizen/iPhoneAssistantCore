@@ -115,8 +115,8 @@ private final class FakeQianniuBridge: AppUIBridge, @unchecked Sendable {
 
     func tap(x: Double, y: Double) async throws {
         lock.withLock {
-            taps += 1
-            if y >= 730 {
+            if y >= 700 && x >= 300 {
+                taps += 1
                 state = verifySend ? .sent : .uncertain
             }
         }

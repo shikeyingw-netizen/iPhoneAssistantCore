@@ -82,25 +82,49 @@ public actor QianniuDriver {
         guard !trimmed.isEmpty else {
             throw QianniuDriverError.emptyReply
         }
-        let snapshot = try await bridge.snapshot(bundleID: Self.bundleID)
-        guard case .directChat = QianniuPageParser.parse(snapshot) else {
-            throw QianniuDriverError.notDirectChat
+
+        for attempt in 0..<2 {
+            let snapshot = try await bridge.snapshot(bundleID: Self.bundleID)
+            guard case .directChat = QianniuPageParser.parse(snapshot) else {
+                throw QianniuDriverError.notDirectChat
+            }
+            guard let input = QianniuPageParser.input(in: snapshot) else {
+                throw QianniuDriverError.replyInputNotFound
+            }
+
+            // Qianniu's first tap often only activates the custom composer;
+            // the keyboard and text view become ready a moment later.
+            try await bridge.tap(x: input.centerX, y: input.centerY)
+            try await bridge.wait(seconds: 0.7)
+            let focused = try await bridge.snapshot(bundleID: Self.bundleID)
+            guard case .directChat = QianniuPageParser.parse(focused),
+                  let focusedInput = QianniuPageParser.input(in: focused)
+            else {
+                throw QianniuDriverError.replyInputNotFound
+            }
+            try await bridge.type(
+                text: trimmed,
+                x: focusedInput.centerX,
+                y: focusedInput.centerY,
+                clear: true
+            )
+            let typed = try await bridge.snapshot(bundleID: Self.bundleID)
+            if typed.nodes.contains(where: {
+                $0.kind == "TextView" && $0.value == trimmed
+            }) {
+                return
+            }
+            if let current = QianniuPageParser.input(in: typed),
+               !current.value.isEmpty {
+                // Anything already present is ambiguous. Never append or
+                // overwrite a partial draft automatically.
+                throw QianniuDriverError.typedReplyNotVerified
+            }
+            if attempt == 0 {
+                try await bridge.wait(seconds: 0.4)
+            }
         }
-        guard let input = QianniuPageParser.input(in: snapshot) else {
-            throw QianniuDriverError.replyInputNotFound
-        }
-        try await bridge.type(
-            text: trimmed,
-            x: input.centerX,
-            y: input.centerY,
-            clear: true
-        )
-        let typed = try await bridge.snapshot(bundleID: Self.bundleID)
-        guard typed.nodes.contains(where: {
-            $0.kind == "TextView" && $0.value == trimmed
-        }) else {
-            throw QianniuDriverError.typedReplyNotVerified
-        }
+        throw QianniuDriverError.typedReplyNotVerified
     }
 
     public func sendPreparedReply(
