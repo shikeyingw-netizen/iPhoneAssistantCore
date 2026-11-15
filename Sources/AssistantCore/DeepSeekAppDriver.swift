@@ -167,6 +167,103 @@ public actor DeepSeekAppDriver {
         )
     }
 
+    public func runCustomerTurn(prompt: String) async throws -> DeepSeekTurnResult {
+        let started = bridge.now()
+        try await bridge.launch(bundleID: configuration.bundleID)
+
+        guard let input = try await waitForInput() else {
+            return DeepSeekTurnResult(
+                success: false,
+                answer: "",
+                latency: bridge.now().timeIntervalSince(started),
+                rateLimited: false,
+                loginRequired: false,
+                failureReason: "DeepSeek input not found",
+                previousAnswerRetained: false
+            )
+        }
+        try await bridge.type(
+            text: prompt,
+            x: input.centerX,
+            y: input.centerY,
+            clear: true
+        )
+        var snapshot = try await bridge.snapshot(bundleID: configuration.bundleID)
+        guard snapshot.nodes(kind: "TextView").contains(where: { $0.value == prompt }) else {
+            return DeepSeekTurnResult(
+                success: false,
+                answer: "",
+                latency: bridge.now().timeIntervalSince(started),
+                rateLimited: false,
+                loginRequired: false,
+                failureReason: "typed prompt not verified",
+                previousAnswerRetained: false
+            )
+        }
+        guard let send = snapshot.firstNode(label: "发送") else {
+            return DeepSeekTurnResult(
+                success: false,
+                answer: "",
+                latency: bridge.now().timeIntervalSince(started),
+                rateLimited: false,
+                loginRequired: false,
+                failureReason: "send button not found",
+                previousAnswerRetained: false
+            )
+        }
+        let baseline = assistantLabels(in: snapshot)
+        try await bridge.tap(x: send.centerX, y: send.centerY)
+
+        let responseStarted = bridge.now()
+        let deadline = responseStarted.addingTimeInterval(configuration.responseTimeout)
+        while bridge.now() < deadline {
+            try await bridge.wait(seconds: configuration.pollInterval)
+            snapshot = try await bridge.snapshot(bundleID: configuration.bundleID)
+            if loginRequired(snapshot.source) {
+                return DeepSeekTurnResult(
+                    success: false,
+                    answer: "",
+                    latency: bridge.now().timeIntervalSince(started),
+                    rateLimited: rateLimited(snapshot.source),
+                    loginRequired: true,
+                    failureReason: "DeepSeek requires login or verification",
+                    previousAnswerRetained: baselinePresent(baseline, in: snapshot)
+                )
+            }
+            guard let candidate = newAssistantText(
+                in: snapshot,
+                baseline: baseline
+            ) else {
+                continue
+            }
+            try await bridge.wait(seconds: configuration.stabilityInterval)
+            let stable = try await bridge.snapshot(bundleID: configuration.bundleID)
+            if newAssistantText(in: stable, baseline: baseline) == candidate {
+                return DeepSeekTurnResult(
+                    success: true,
+                    answer: candidate,
+                    latency: bridge.now().timeIntervalSince(started),
+                    rateLimited: false,
+                    loginRequired: false,
+                    failureReason: nil,
+                    previousAnswerRetained: baselinePresent(
+                        baseline,
+                        in: stable
+                    )
+                )
+            }
+        }
+        return DeepSeekTurnResult(
+            success: false,
+            answer: "",
+            latency: bridge.now().timeIntervalSince(started),
+            rateLimited: rateLimited(snapshot.source),
+            loginRequired: false,
+            failureReason: "DeepSeek response timeout",
+            previousAnswerRetained: baselinePresent(baseline, in: snapshot)
+        )
+    }
+
     private func waitForInput() async throws -> AccessibilityNode? {
         let deadline = bridge.now().addingTimeInterval(configuration.inputTimeout)
         while bridge.now() < deadline {
@@ -217,5 +314,59 @@ public actor DeepSeekAppDriver {
             return false
         }
         return source.contains(previous)
+    }
+
+    private func assistantLabels(
+        in snapshot: AccessibilitySnapshot
+    ) -> [String] {
+        let ignored = Set([
+            "复制",
+            "喜欢",
+            "不喜欢",
+            "朗读",
+            "分享",
+            "重新生成",
+        ])
+        var seen = Set<String>()
+        return snapshot.nodes
+            .filter {
+                ($0.kind == "Other" || $0.kind == "StaticText")
+                    && $0.x >= 20
+                    && $0.x < 120
+                    && $0.y > 100
+                    && $0.y < 680
+                    && $0.width >= 20
+                    && !$0.label.isEmpty
+                    && !ignored.contains($0.label)
+            }
+            .sorted { $0.y < $1.y }
+            .compactMap { node in
+                seen.insert(node.label).inserted ? node.label : nil
+            }
+    }
+
+    private func newAssistantText(
+        in snapshot: AccessibilitySnapshot,
+        baseline: [String]
+    ) -> String? {
+        let existing = Set(baseline)
+        let labels = assistantLabels(in: snapshot).filter {
+            !existing.contains($0)
+        }
+        guard !labels.isEmpty else {
+            return nil
+        }
+        return labels.joined(separator: "\n")
+    }
+
+    private func baselinePresent(
+        _ baseline: [String],
+        in snapshot: AccessibilitySnapshot
+    ) -> Bool {
+        guard !baseline.isEmpty else {
+            return false
+        }
+        let current = Set(assistantLabels(in: snapshot))
+        return baseline.allSatisfy(current.contains)
     }
 }

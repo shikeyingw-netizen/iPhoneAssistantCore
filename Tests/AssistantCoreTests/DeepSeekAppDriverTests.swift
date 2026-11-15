@@ -66,6 +66,26 @@ final class DeepSeekAppDriverTests: XCTestCase {
         XCTAssertTrue(result.rateLimited)
         XCTAssertEqual(result.failureReason, "DeepSeek response timeout")
     }
+
+    func testCustomerTurnDetectsNewStableAnswerWithoutExpectedToken() async throws {
+        let bridge = FakeDeepSeekBridge()
+        let driver = DeepSeekAppDriver(
+            bridge: bridge,
+            configuration: DeepSeekDriverConfiguration(
+                responseTimeout: 3,
+                pollInterval: 0.1,
+                stabilityInterval: 0.1
+            )
+        )
+
+        let result = try await driver.runCustomerTurn(
+            prompt: "请只回复：客服测试成功"
+        )
+
+        XCTAssertTrue(result.success)
+        XCTAssertEqual(result.answer, "客服测试成功")
+        XCTAssertNil(result.failureReason)
+    }
 }
 
 private final class FakeDeepSeekBridge: DeepSeekUIBridge, @unchecked Sendable {

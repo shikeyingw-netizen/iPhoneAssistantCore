@@ -33,5 +33,6 @@ swift test --parallel
 
 The test suite covers business rules, PII redaction, task states, logistics
 validation, encrypted SQLite persistence, deduplication, priority claims,
-restart recovery, scheduling, manual takeover gates, accessibility parsing, and
-the DeepSeek App driver with a fake bridge.
+restart recovery, scheduling, manual takeover gates, accessibility parsing,
+the DeepSeek App driver, iCTRL protocol-v1 encryption, response authentication,
+foreground-bundle rejection, and the concrete iCTRL-to-DeepSeek bridge.
