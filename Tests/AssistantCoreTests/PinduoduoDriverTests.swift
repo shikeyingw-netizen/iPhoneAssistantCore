@@ -101,7 +101,7 @@ final class PinduoduoDriverTests: XCTestCase {
         XCTAssertEqual(tapCount, 1)
     }
 
-    func testSendButtonIsFoundBesideShiftedComposerWhenKeyboardIsUp()
+    func testSendUsesInputMethodActionKeyWhenKeyboardIsUp()
         async throws {
         let bridge = FakeCommerceBridge(
             state: .direct,
@@ -187,7 +187,7 @@ private final class FakeCommerceBridge: AppUIBridge, @unchecked Sendable {
             } else if (state == .typed || state == .direct)
                 && (
                     y >= 730
-                        || (keyboardShifted && y >= 430 && y <= 470)
+                        || (keyboardShifted && y >= 690 && y <= 714)
                 ) {
                 state = verifySend ? .sent : .uncertain
             }
@@ -244,6 +244,8 @@ private final class FakeCommerceBridge: AppUIBridge, @unchecked Sendable {
               TextView,\(input) {{57, 439}, {235, 27}}
               Button, {{308, 438}, {28, 28}}
               Button, {{349, 438}, {28, 28}}
+              Other, label: '隐藏输入法', {{336, 746}, {54, 42}}
+              Other, label: '数字键盘', {{67, 716}, {81, 50}}
             \(sentMessage)
             """
         }

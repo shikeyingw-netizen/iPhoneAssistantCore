@@ -376,11 +376,18 @@ public actor PinduoduoDriver {
         }) else {
             throw PinduoduoDriverError.typedReplyNotVerified
         }
-        guard let send = sendButton(in: before) else {
-            throw PinduoduoDriverError.sendButtonNotFound
-        }
         let beforeCount = messageOccurrences(of: trimmed, in: before)
-        try await bridge.tap(x: send.centerX, y: send.centerY)
+        if keyboardIsVisible(before) {
+            // The iPhone 13 input-method action key occupies the lower-right
+            // cell of the third-party keyboard. It is not exposed as an
+            // accessibility button.
+            try await bridge.tap(x: 354, y: 702)
+        } else {
+            guard let send = sendButton(in: before) else {
+                throw PinduoduoDriverError.sendButtonNotFound
+            }
+            try await bridge.tap(x: send.centerX, y: send.centerY)
+        }
         let after = try await bridge.snapshot(bundleID: Self.bundleID)
         let afterCount = messageOccurrences(of: trimmed, in: after)
         let inputStillContainsReply = after.nodes.contains {
@@ -409,20 +416,6 @@ public actor PinduoduoDriver {
     private func sendButton(
         in snapshot: AccessibilitySnapshot
     ) -> AccessibilityNode? {
-        if let input = replyInput(in: snapshot) {
-            let sameRow = snapshot.nodes.filter {
-                $0.kind == "Button"
-                    && $0.x >= input.x + input.width - 4
-                    && abs($0.centerY - input.centerY) <= 32
-                    && $0.width >= 20
-                    && $0.width <= 56
-                    && $0.height >= 20
-                    && $0.height <= 56
-            }
-            if let send = sameRow.max(by: { $0.x < $1.x }) {
-                return send
-            }
-        }
         snapshot.nodes
             .filter {
                 $0.kind == "Button"
@@ -434,6 +427,14 @@ public actor PinduoduoDriver {
                     && $0.height <= 56
             }
             .max(by: { $0.x < $1.x })
+    }
+
+    private func keyboardIsVisible(
+        _ snapshot: AccessibilitySnapshot
+    ) -> Bool {
+        snapshot.source.contains("Keyboard,")
+            || snapshot.source.contains("隐藏输入法")
+            || snapshot.source.contains("数字键盘")
     }
 
     private func messageOccurrences(

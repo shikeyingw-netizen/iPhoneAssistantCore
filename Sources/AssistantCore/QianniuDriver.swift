@@ -116,11 +116,15 @@ public actor QianniuDriver {
         }) else {
             throw QianniuDriverError.typedReplyNotVerified
         }
-        guard let send = sendButton(in: before) else {
-            throw QianniuDriverError.sendButtonNotFound
-        }
         let beforeCount = messageOccurrences(of: trimmed, in: before)
-        try await bridge.tap(x: send.centerX, y: send.centerY)
+        if keyboardIsVisible(before) {
+            try await bridge.tap(x: 354, y: 702)
+        } else {
+            guard let send = sendButton(in: before) else {
+                throw QianniuDriverError.sendButtonNotFound
+            }
+            try await bridge.tap(x: send.centerX, y: send.centerY)
+        }
         let after = try await bridge.snapshot(bundleID: Self.bundleID)
         let afterCount = messageOccurrences(of: trimmed, in: after)
         let inputStillContainsReply = after.nodes.contains {
@@ -137,20 +141,6 @@ public actor QianniuDriver {
     private func sendButton(
         in snapshot: AccessibilitySnapshot
     ) -> AccessibilityNode? {
-        if let input = QianniuPageParser.input(in: snapshot) {
-            let sameRow = snapshot.nodes.filter {
-                $0.kind == "Button"
-                    && $0.x >= input.x + input.width - 4
-                    && abs($0.centerY - input.centerY) <= 32
-                    && $0.width >= 20
-                    && $0.width <= 56
-                    && $0.height >= 20
-                    && $0.height <= 56
-            }
-            if let send = sameRow.max(by: { $0.x < $1.x }) {
-                return send
-            }
-        }
         snapshot.nodes
             .filter {
                 $0.kind == "Button"
@@ -162,6 +152,14 @@ public actor QianniuDriver {
                     && $0.height <= 56
             }
             .max(by: { $0.x < $1.x })
+    }
+
+    private func keyboardIsVisible(
+        _ snapshot: AccessibilitySnapshot
+    ) -> Bool {
+        snapshot.source.contains("Keyboard,")
+            || snapshot.source.contains("隐藏输入法")
+            || snapshot.source.contains("数字键盘")
     }
 
     private func messageOccurrences(
