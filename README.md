@@ -26,12 +26,18 @@ Migrated in this slice:
 - Foreground-bundle verification before the DeepSeek bridge reads or taps UI.
 - Generic customer-turn answer detection from newly added, stable DeepSeek
   answer nodes, without requiring a known answer token.
+- Pinduoduo pending-row parsing, stale-row rejection, typed-reply verification,
+  and send-uncertain handling.
+- Qianniu direct-chat recognition, typed-reply verification, and
+  send-uncertain handling.
+- WeChat logistics drafts with exact group names (`申通`, `极兔`), duplicate
+  suppression, and mandatory operator approval before any future send.
 
 Not migrated yet:
 
 - Notification-center observer.
 - iCTRL/XCTest platform drivers.
-- Pinduoduo, Qianniu, and WeChat UI drivers.
+- Production Pinduoduo, Qianniu, and WeChat UI drivers and deep links.
 - Encrypted on-device logs and manual confirmation UI.
 - Keychain provisioning of the paired iCTRL credential.
 - A fresh real-device run of the concrete iCTRL bridge.

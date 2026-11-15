@@ -4,22 +4,22 @@ import XCTest
 final class LogisticsGuardTests: XCTestCase {
     private let policy = LogisticsPolicy(
         groups: [
-            .sto: "申通央科鸟食群",
-            .jnt: "极兔测试群",
+            .sto: "申通",
+            .jnt: "极兔",
         ]
     )
 
     func testSTOIntercept() {
         let decision = policy.intercept(order(carrier: "申通快递", tracking: "777000000001"))
         XCTAssertTrue(decision.allowed)
-        XCTAssertEqual(decision.groupName, "申通央科鸟食群")
+        XCTAssertEqual(decision.groupName, "申通")
         XCTAssertEqual(decision.courierMessage, "777000000001 拦截")
     }
 
     func testJNTIntercept() {
         let decision = policy.intercept(order(carrier: "极兔速递", tracking: "JT000000000002"))
         XCTAssertTrue(decision.allowed)
-        XCTAssertEqual(decision.groupName, "极兔测试群")
+        XCTAssertEqual(decision.groupName, "极兔")
         XCTAssertEqual(decision.courierMessage, "JT000000000002 拦截")
     }
 
