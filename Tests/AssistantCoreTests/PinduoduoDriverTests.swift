@@ -101,6 +101,23 @@ final class PinduoduoDriverTests: XCTestCase {
         XCTAssertEqual(tapCount, 1)
     }
 
+    func testSendButtonIsFoundBesideShiftedComposerWhenKeyboardIsUp()
+        async throws {
+        let bridge = FakeCommerceBridge(
+            state: .direct,
+            keyboardShifted: true
+        )
+        let driver = PinduoduoDriver(bridge: bridge)
+        let reply = "客服测试成功"
+
+        try await driver.prepareReply(reply)
+        let receipt = try await driver.sendPreparedReply(reply)
+
+        XCTAssertEqual(receipt, .sentVerified)
+        XCTAssertEqual(bridge.currentState(), .sent)
+        XCTAssertEqual(bridge.tapCount(), 1)
+    }
+
     private func pendingListSource() -> String {
         """
         Application, label: '拼多多商家版', {{0, 0}, {390, 844}}
@@ -129,11 +146,17 @@ private final class FakeCommerceBridge: AppUIBridge, @unchecked Sendable {
     private let verifySend: Bool
     private var taps = 0
     private var typedReply = ""
+    private let keyboardShifted: Bool
     private let clock = Date(timeIntervalSince1970: 1_800_000_000)
 
-    init(state: State, verifySend: Bool = true) {
+    init(
+        state: State,
+        verifySend: Bool = true,
+        keyboardShifted: Bool = false
+    ) {
         self.state = state
         self.verifySend = verifySend
+        self.keyboardShifted = keyboardShifted
     }
 
     func currentState() -> State {
@@ -161,7 +184,11 @@ private final class FakeCommerceBridge: AppUIBridge, @unchecked Sendable {
             taps += 1
             if state == .pending {
                 state = .direct
-            } else if (state == .typed || state == .direct) && y >= 730 {
+            } else if (state == .typed || state == .direct)
+                && (
+                    y >= 730
+                        || (keyboardShifted && y >= 430 && y <= 470)
+                ) {
                 state = verifySend ? .sent : .uncertain
             }
         }
@@ -207,6 +234,18 @@ private final class FakeCommerceBridge: AppUIBridge, @unchecked Sendable {
             """
         } else {
             sentMessage = ""
+        }
+        if keyboardShifted {
+            return """
+            Application, label: '拼多多商家版', {{0, 0}, {390, 844}}
+              NavigationBar, id: '客户甲', {{0, 47}, {390, 44}}
+                Button, {{294, 47}, {44, 44}}
+                  StaticText, label: '订单', {{306, 73}, {20, 14}}
+              TextView,\(input) {{57, 439}, {235, 27}}
+              Button, {{308, 438}, {28, 28}}
+              Button, {{349, 438}, {28, 28}}
+            \(sentMessage)
+            """
         }
         return """
         Application, label: '拼多多商家版', {{0, 0}, {390, 844}}

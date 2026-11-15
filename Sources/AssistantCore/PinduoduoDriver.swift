@@ -409,6 +409,20 @@ public actor PinduoduoDriver {
     private func sendButton(
         in snapshot: AccessibilitySnapshot
     ) -> AccessibilityNode? {
+        if let input = replyInput(in: snapshot) {
+            let sameRow = snapshot.nodes.filter {
+                $0.kind == "Button"
+                    && $0.x >= input.x + input.width - 4
+                    && abs($0.centerY - input.centerY) <= 32
+                    && $0.width >= 20
+                    && $0.width <= 56
+                    && $0.height >= 20
+                    && $0.height <= 56
+            }
+            if let send = sameRow.max(by: { $0.x < $1.x }) {
+                return send
+            }
+        }
         snapshot.nodes
             .filter {
                 $0.kind == "Button"
