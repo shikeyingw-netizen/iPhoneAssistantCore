@@ -26,8 +26,21 @@ jobs:
           swift --version
 
       - name: Run Swift tests
+        shell: bash
         run: |
-          swift test --parallel
+          set +e
+          swift test --parallel 2>&1 | tee swift-test.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "## Swift test result"
+            echo
+            echo "Exit code: ${status}"
+            echo
+            echo '```text'
+            tail -n 500 swift-test.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "${status}"
 
       - name: Upload test logs
         if: always()
@@ -37,4 +50,5 @@ jobs:
           path: |
             .build/**/*.log
             .build/**/*.txt
+            swift-test.log
           if-no-files-found: ignore
