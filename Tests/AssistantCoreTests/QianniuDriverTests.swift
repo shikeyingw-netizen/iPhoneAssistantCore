@@ -111,6 +111,8 @@ private final class FakeQianniuBridge: AppUIBridge, @unchecked Sendable {
     private var typedReply = ""
     private var state: State = .direct
     private var taps = 0
+    private var keyboardVisible = false
+    private var keyboardEnglish = false
     private let clock = Date(timeIntervalSince1970: 1_800_000_000)
 
     init(verifySend: Bool = true, dropTypedText: Bool = false) {
@@ -139,6 +141,18 @@ private final class FakeQianniuBridge: AppUIBridge, @unchecked Sendable {
             if y >= 700 && x >= 300 {
                 taps += 1
                 state = verifySend ? .sent : .uncertain
+                keyboardVisible = false
+                return
+            }
+            if keyboardVisible,
+               x <= 80,
+               y >= 770 {
+                keyboardEnglish.toggle()
+                return
+            }
+            if x <= 260,
+               y >= 400 {
+                keyboardVisible = true
             }
         }
     }
@@ -150,8 +164,12 @@ private final class FakeQianniuBridge: AppUIBridge, @unchecked Sendable {
         clear: Bool
     ) async throws {
         lock.withLock {
-            typedReply = dropTypedText ? "" : text
+            typedReply =
+                dropTypedText || !keyboardVisible || !keyboardEnglish
+                ? ""
+                : text
             state = .typed
+            keyboardVisible = false
         }
     }
 
@@ -165,6 +183,23 @@ private final class FakeQianniuBridge: AppUIBridge, @unchecked Sendable {
         let input = (state == .typed || state == .uncertain)
             ? " value: '\(typedReply)',"
             : ""
+        let keyboard: String
+        if !keyboardVisible {
+            keyboard = ""
+        } else if keyboardEnglish {
+            keyboard = """
+              Keyboard, {{0, 553}, {390, 233}}
+                Key, label: 'space', id: 'space', {{97, 722}, {195, 46}}
+                Button, label: 'send', id: 'Send', {{292, 722}, {97, 46}}
+              Button, label: '下一个键盘', value: '简体拼音', {{8, 775}, {68, 68}}
+            """
+        } else {
+            keyboard = """
+              Other, label: '隐藏输入法', {{336, 502}, {54, 42}}
+              Other, label: '数字键盘', {{67, 716}, {81, 50}}
+              Button, label: '下一个键盘', value: 'English (US)', {{8, 775}, {68, 68}}
+            """
+        }
         let sentMessage = state == .sent
             ? "  Other, label: '\(typedReply)', {{338, 646}, {40, 30}}\n"
             : ""
@@ -178,6 +213,7 @@ private final class FakeQianniuBridge: AppUIBridge, @unchecked Sendable {
           Button, {{293, 763}, {37, 37}}
           Button, {{340, 763}, {37, 37}}
         \(sentMessage)
+        \(keyboard)
         """
     }
 }

@@ -53,6 +53,7 @@ public enum QianniuPageParser {
 public enum QianniuDriverError: Error, Equatable {
     case notDirectChat
     case replyInputNotFound
+    case keyboardLanguageNotVerified
     case typedReplyNotVerified
     case sendButtonNotFound
     case emptyReply
@@ -65,6 +66,7 @@ public enum QianniuSendReceipt: Equatable, Sendable {
 
 public actor QianniuDriver {
     public static let bundleID = "com.taobao.sellerplatform"
+    private static let languageKey = CGPoint(x: 42, y: 810)
 
     private let bridge: any AppUIBridge
 
@@ -83,50 +85,68 @@ public actor QianniuDriver {
             throw QianniuDriverError.emptyReply
         }
 
-        for attempt in 0..<2 {
-            let snapshot = try await bridge.snapshot(bundleID: Self.bundleID)
-            guard case .directChat = QianniuPageParser.parse(snapshot) else {
-                throw QianniuDriverError.notDirectChat
-            }
-            guard let input = QianniuPageParser.input(in: snapshot) else {
-                throw QianniuDriverError.replyInputNotFound
-            }
-
-            // Qianniu's first tap often only activates the custom composer;
-            // the keyboard and text view become ready a moment later.
-            try await bridge.tap(x: input.centerX, y: input.centerY)
-            try await bridge.wait(seconds: 0.7)
-            let focused = try await bridge.snapshot(bundleID: Self.bundleID)
-            guard case .directChat = QianniuPageParser.parse(focused),
-                  let focusedInput = QianniuPageParser.input(in: focused)
-            else {
-                throw QianniuDriverError.replyInputNotFound
-            }
-            guard focusedInput.value.isEmpty else {
-                throw QianniuDriverError.typedReplyNotVerified
-            }
-            try await bridge.pasteText(
-                text: trimmed,
-                x: focusedInput.centerX,
-                y: focusedInput.centerY
-            )
-            let typed = try await bridge.snapshot(bundleID: Self.bundleID)
-            if typed.nodes.contains(where: {
-                $0.kind == "TextView" && $0.value == trimmed
-            }) {
-                return
-            }
-            if let current = QianniuPageParser.input(in: typed),
-               !current.value.isEmpty {
-                // Anything already present is ambiguous. Never append or
-                // overwrite a partial draft automatically.
-                throw QianniuDriverError.typedReplyNotVerified
-            }
-            if attempt == 0 {
-                try await bridge.wait(seconds: 0.4)
-            }
+        let snapshot = try await bridge.snapshot(bundleID: Self.bundleID)
+        guard case .directChat = QianniuPageParser.parse(snapshot) else {
+            throw QianniuDriverError.notDirectChat
         }
-        throw QianniuDriverError.typedReplyNotVerified
+        guard let input = QianniuPageParser.input(in: snapshot) else {
+            throw QianniuDriverError.replyInputNotFound
+        }
+
+        // Qianniu's first tap often only activates the custom composer.
+        try await bridge.tap(x: input.centerX, y: input.centerY)
+        try await bridge.wait(seconds: 0.7)
+        var focused = try await bridge.snapshot(bundleID: Self.bundleID)
+        guard case .directChat = QianniuPageParser.parse(focused),
+              let focusedInput = QianniuPageParser.input(in: focused)
+        else {
+            throw QianniuDriverError.replyInputNotFound
+        }
+        guard focusedInput.value.isEmpty else {
+            throw QianniuDriverError.typedReplyNotVerified
+        }
+
+        // XCTest's direct text injection works with Qianniu's English
+        // keyboard, while its Chinese nine-key keyboard resigns focus and
+        // drops the text. Select English only for the insertion, then restore
+        // the Chinese keyboard so the established send-button coordinates
+        // remain valid.
+        try await selectKeyboard(.english, snapshot: focused)
+        try await bridge.type(
+            text: trimmed,
+            x: focusedInput.centerX,
+            y: focusedInput.centerY,
+            clear: false
+        )
+        let typed = try await bridge.snapshot(bundleID: Self.bundleID)
+        guard let typedInput = QianniuPageParser.input(in: typed),
+              typedInput.value == trimmed
+        else {
+            throw QianniuDriverError.typedReplyNotVerified
+        }
+
+        // Typing dismisses Qianniu's software keyboard. Reopen it without
+        // changing the text, then restore the Chinese layout.
+        try await bridge.tap(
+            x: typedInput.centerX,
+            y: typedInput.centerY
+        )
+        try await bridge.wait(seconds: 0.4)
+        focused = try await bridge.snapshot(bundleID: Self.bundleID)
+        guard let reopenedInput = QianniuPageParser.input(in: focused),
+              reopenedInput.value == trimmed
+        else {
+            throw QianniuDriverError.typedReplyNotVerified
+        }
+        try await selectKeyboard(.chinese, snapshot: focused)
+        let ready = try await bridge.snapshot(bundleID: Self.bundleID)
+        guard case .directChat = QianniuPageParser.parse(ready),
+              let readyInput = QianniuPageParser.input(in: ready),
+              readyInput.value == trimmed,
+              keyboardLanguage(in: ready) == .chinese
+        else {
+            throw QianniuDriverError.keyboardLanguageNotVerified
+        }
     }
 
     public func sendPreparedReply(
@@ -186,6 +206,46 @@ public actor QianniuDriver {
         snapshot.source.contains("Keyboard,")
             || snapshot.source.contains("隐藏输入法")
             || snapshot.source.contains("数字键盘")
+    }
+
+    private enum KeyboardLanguage {
+        case chinese
+        case english
+    }
+
+    private func selectKeyboard(
+        _ target: KeyboardLanguage,
+        snapshot initial: AccessibilitySnapshot
+    ) async throws {
+        var snapshot = initial
+        for _ in 0..<3 {
+            if keyboardLanguage(in: snapshot) == target {
+                return
+            }
+            try await bridge.tap(
+                x: Self.languageKey.x,
+                y: Self.languageKey.y
+            )
+            try await bridge.wait(seconds: 0.35)
+            snapshot = try await bridge.snapshot(bundleID: Self.bundleID)
+        }
+        guard keyboardLanguage(in: snapshot) == target else {
+            throw QianniuDriverError.keyboardLanguageNotVerified
+        }
+    }
+
+    private func keyboardLanguage(
+        in snapshot: AccessibilitySnapshot
+    ) -> KeyboardLanguage? {
+        if snapshot.source.contains("Key, label: 'space'"),
+           snapshot.source.contains("Button, label: 'send'") {
+            return .english
+        }
+        if snapshot.source.contains("隐藏输入法"),
+           snapshot.source.contains("数字键盘") {
+            return .chinese
+        }
+        return nil
     }
 
     private func messageOccurrences(
