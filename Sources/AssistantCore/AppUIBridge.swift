@@ -10,12 +10,25 @@ public protocol AppUIBridge: Sendable {
         x: Double,
         y: Double
     ) async throws
+    func pasteText(
+        text: String,
+        x: Double,
+        y: Double
+    ) async throws
     func wait(seconds: Double) async throws
     func now() -> Date
 }
 
 public extension AppUIBridge {
     func typeOnKeyboard(
+        text: String,
+        x: Double,
+        y: Double
+    ) async throws {
+        try await type(text: text, x: x, y: y, clear: false)
+    }
+
+    func pasteText(
         text: String,
         x: Double,
         y: Double

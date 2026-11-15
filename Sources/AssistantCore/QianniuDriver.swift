@@ -105,7 +105,7 @@ public actor QianniuDriver {
             guard focusedInput.value.isEmpty else {
                 throw QianniuDriverError.typedReplyNotVerified
             }
-            try await bridge.typeOnKeyboard(
+            try await bridge.pasteText(
                 text: trimmed,
                 x: focusedInput.centerX,
                 y: focusedInput.centerY
