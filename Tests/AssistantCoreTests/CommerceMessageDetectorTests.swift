@@ -82,6 +82,29 @@ final class CommerceMessageDetectorTests: XCTestCase {
         XCTAssertEqual(messages[0].source, .qianniuUnreadList)
     }
 
+    func testQianniuReadConversationRowIsStillAddressable() {
+        let source = """
+        Application, label: '千牛', {{0, 0}, {390, 844}}
+          StaticText, label: '中星商贸城', {{75, 47}, {110, 20}}
+          Cell, {{0, 461}, {390, 74}}
+            StaticText, label: '[已读]', {{67, 500}, {38, 17}}
+            StaticText, label: '客服自动回复测试7，请回复测试成功', {{108, 500}, {273, 17}}
+            StaticText, label: '今天 23:43', {{329, 473}, {48, 14}}
+            StaticText, label: 'tb089909406', {{67, 473}, {79, 19}}
+        """
+
+        let messages = CommerceMessageDetector.qianniuMessages(
+            AccessibilityTreeParser.parse(source)
+        )
+
+        XCTAssertEqual(messages.count, 1)
+        XCTAssertEqual(messages[0].customerName, "tb089909406")
+        XCTAssertEqual(
+            messages[0].text,
+            "客服自动回复测试7，请回复测试成功"
+        )
+    }
+
     func testPinduoduoDirectChatUsesLatestCustomerMessage() {
         let source = """
         Application, label: '拼多多商家版', {{0, 0}, {390, 844}}

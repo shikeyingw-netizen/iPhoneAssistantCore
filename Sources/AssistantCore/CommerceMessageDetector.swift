@@ -409,14 +409,13 @@ public enum CommerceMessageDetector {
     public static func qianniuMessages(
         _ snapshot: AccessibilitySnapshot
     ) -> [DetectedCommerceMessage] {
-        var output = qianniuUnreadMessages(snapshot)
         if let latest = latestQianniuCustomerMessage(snapshot) {
             let key = StableIdentifier.hexDigest(
                 "qianniu",
                 normalizeIdentity(latest.customer),
                 normalizeIdentity(latest.text)
             )
-            output.append(
+            return [
                 DetectedCommerceMessage(
                     platform: .qianniu,
                     storeName: qianniuStoreName(snapshot),
@@ -425,10 +424,10 @@ public enum CommerceMessageDetector {
                     notificationKey: key,
                     source: .directChat,
                     detectedAt: snapshot.capturedAt
-                )
-            )
+                ),
+            ]
         }
-        return unique(output)
+        return unique(qianniuConversationMessages(snapshot))
     }
 
     private static func pinduoduoOverlayMessages(
@@ -507,7 +506,7 @@ public enum CommerceMessageDetector {
         }
     }
 
-    private static func qianniuUnreadMessages(
+    private static func qianniuConversationMessages(
         _ snapshot: AccessibilitySnapshot
     ) -> [DetectedCommerceMessage] {
         let store = qianniuStoreName(snapshot)
@@ -523,10 +522,15 @@ public enum CommerceMessageDetector {
                 let nested = snapshot.nodes.filter {
                     contains(cell, $0.centerX, $0.centerY)
                 }
-                guard nested.contains(where: {
+                let hasUnread = nested.contains(where: {
                     $0.label.trimmingCharacters(in: .whitespaces)
                         == "[未读]"
-                }) else {
+                })
+                let hasRead = nested.contains(where: {
+                    $0.label.trimmingCharacters(in: .whitespaces)
+                        == "[已读]"
+                })
+                guard hasUnread || hasRead else {
                     return nil
                 }
                 let customer = nested
