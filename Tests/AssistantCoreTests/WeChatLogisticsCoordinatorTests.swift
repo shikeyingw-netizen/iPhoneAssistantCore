@@ -102,7 +102,7 @@ final class WeChatLogisticsCoordinatorTests: XCTestCase {
     private func makeCoordinator() -> WeChatLogisticsCoordinator {
         WeChatLogisticsCoordinator(
             policy: policy,
-            clock: { fixedDate }
+            clock: { self.fixedDate }
         )
     }
 
