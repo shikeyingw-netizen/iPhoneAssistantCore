@@ -655,17 +655,35 @@ public enum CommerceMessageDetector {
             }
             .min(by: { $0.x < $1.x })?
             .label ?? "待核实客户"
-        let messages = snapshot.nodes.filter {
-            ($0.kind == "Other" || $0.kind == "StaticText")
-                && $0.x >= 55
-                && $0.x < 335
-                && $0.y >= 100
-                && $0.y < 700
-                && $0.width >= 20
-                && !$0.label.isEmpty
-                && !messageMarkers.contains(clean($0.label))
-                && !isTimestamp($0.label)
-        }
+        let messages = snapshot.nodes
+            .filter {
+                $0.kind == "Cell"
+                    && $0.width >= 300
+                    && $0.height >= 50
+                    && $0.y >= 90
+                    && $0.y < 700
+            }
+            .compactMap {
+                cell -> (x: Double, y: Double, text: String)? in
+                let nested = snapshot.nodes.filter {
+                    contains(cell, $0.centerX, $0.centerY)
+                }
+                guard let text = nested
+                    .filter({
+                        ($0.kind == "Other" || $0.kind == "StaticText")
+                            && $0.x >= 55
+                            && $0.x < 335
+                            && $0.width >= 20
+                            && !$0.label.isEmpty
+                            && !messageMarkers.contains(clean($0.label))
+                            && !isTimestamp($0.label)
+                    })
+                    .max(by: { $0.y < $1.y })
+                else {
+                    return nil
+                }
+                return (text.x, text.y, clean(text.label))
+            }
         guard let latest = messages.max(by: { $0.y < $1.y }),
               latest.x < 190
         else {

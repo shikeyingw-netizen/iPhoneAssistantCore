@@ -105,6 +105,36 @@ final class CommerceMessageDetectorTests: XCTestCase {
         )
     }
 
+    func testQianniuComposerToolbarIsNotTreatedAsCustomerMessage() {
+        let source = """
+        Application, label: '千牛', {{0, 0}, {390, 844}}
+          Button, label: 'back', {{12, 57}, {24, 24}}
+          Button, label: 'tb089909406', {{55, 59}, {110, 21}}
+          Cell, {{0, 236}, {390, 132}}
+            Image, {{12, 277}, {34, 34}}
+            StaticText, label: 'tb089909406', {{56, 277}, {84, 14}}
+            Other, label: '客服自动回复测试10，请回复测试成功', {{67, 306}, {254, 42}}
+          Cell, {{0, 379}, {100, 40}}
+            Other, label: '邀请下单', {{8, 388}, {89, 31}}
+          Cell, {{100, 379}, {69, 40}}
+            Other, label: '相册', {{103, 388}, {63, 31}}
+          Cell, {{170, 379}, {100, 40}}
+            Other, label: '小额打款', {{173, 388}, {89, 31}}
+          TextView, {{78, 429}, {168, 37}}
+        """
+
+        let messages = CommerceMessageDetector.qianniuMessages(
+            AccessibilityTreeParser.parse(source)
+        )
+
+        XCTAssertEqual(messages.count, 1)
+        XCTAssertEqual(messages[0].source, .directChat)
+        XCTAssertEqual(
+            messages[0].text,
+            "客服自动回复测试10，请回复测试成功"
+        )
+    }
+
     func testPinduoduoDirectChatUsesLatestCustomerMessage() {
         let source = """
         Application, label: '拼多多商家版', {{0, 0}, {390, 844}}
