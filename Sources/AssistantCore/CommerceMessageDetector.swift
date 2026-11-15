@@ -42,6 +42,108 @@ public struct DetectedCommerceMessage: Equatable, Sendable {
     }
 }
 
+public struct VisibleTextItem: Equatable, Sendable {
+    public let label: String
+    public let x: Double
+    public let y: Double
+    public let width: Double
+    public let height: Double
+    public let confidence: Double
+
+    public init(
+        label: String,
+        x: Double,
+        y: Double,
+        width: Double,
+        height: Double,
+        confidence: Double
+    ) {
+        self.label = label
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.confidence = confidence
+    }
+}
+
+public enum CommerceBannerTextParser {
+    public static func parse(
+        _ items: [VisibleTextItem],
+        capturedAt: Date
+    ) -> [DetectedCommerceMessage] {
+        let headers = items.filter {
+            $0.y < 180
+                && $0.confidence >= 0.3
+                && (
+                    $0.label == "拼多多商家版"
+                        || $0.label == "千牛"
+                )
+        }
+        return headers.compactMap { header in
+            let platform: CommercePlatform =
+                header.label == "拼多多商家版" ? .pinduoduo : .qianniu
+            let bodyItems = items
+                .filter {
+                    $0.y > header.y + 3
+                        && $0.y < header.y + 58
+                        && $0.x >= 60
+                        && $0.x < 360
+                        && $0.width >= 15
+                        && $0.label != header.label
+                        && !isTimestamp($0.label)
+                }
+                .sorted { $0.y < $1.y }
+            let body = bodyItems
+                .map(\.label)
+                .joined()
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !body.isEmpty,
+                  !MerchantPolicy.containsAny(
+                      body,
+                      MerchantPolicy.systemMarkers
+                  )
+            else {
+                return nil
+            }
+            let key = StableIdentifier.hexDigest(
+                platform.rawValue,
+                "banner-ocr",
+                normalize(body)
+            )
+            let actionY = bodyItems.map {
+                $0.y + $0.height / 2
+            }.min() ?? header.y + header.height / 2
+            return DetectedCommerceMessage(
+                platform: platform,
+                storeName: "\(platform.displayName)待核实店铺",
+                customerName: "待核实客户",
+                text: body,
+                notificationKey: key,
+                source: .notificationCenter,
+                detectedAt: capturedAt,
+                actionX: 195,
+                actionY: actionY
+            )
+        }
+    }
+
+    private static func isTimestamp(_ text: String) -> Bool {
+        text.range(
+            of: #"^(?:\d+\s*(?:秒|分钟|小时)前|刚刚|现在|\d{1,2}:\d{2})$"#,
+            options: .regularExpression
+        ) != nil
+    }
+
+    private static func normalize(_ text: String) -> String {
+        text.replacingOccurrences(
+            of: #"\s+"#,
+            with: "",
+            options: .regularExpression
+        ).lowercased()
+    }
+}
+
 public enum CommerceNotificationParser {
     private static let pinduoduoPrefix = "拼多多商家版, "
     private static let qianniuPrefix = "千牛, "

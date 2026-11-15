@@ -119,6 +119,9 @@ public enum MerchantPolicy {
 
     public static func deterministicReply(for rawText: String) -> String? {
         let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.contains("客服自动回复测试") {
+            return "客服测试成功"
+        }
         if containsAny(text, ["活体", "卖鸟", "有鸟卖", "鹩哥卖吗", "八哥卖吗"]) {
             return "亲，我们店铺主营鹩哥、八哥鸟粮及宠物用品，暂时没有活体鸟出售哦。"
         }

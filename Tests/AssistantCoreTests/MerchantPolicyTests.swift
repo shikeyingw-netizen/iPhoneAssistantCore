@@ -2,6 +2,15 @@ import XCTest
 @testable import AssistantCore
 
 final class MerchantPolicyTests: XCTestCase {
+    func testCustomerServiceTestMessageHasDeterministicReply() {
+        XCTAssertEqual(
+            MerchantPolicy.deterministicReply(
+                "客服自动回复测试2，请回复测试成功"
+            ),
+            "客服测试成功"
+        )
+    }
+
     func testShippingQuestionUsesKnownRule() {
         let result = MerchantPolicy.response(for: "今天下单什么时候发货？")
         XCTAssertEqual(result.0.category, .normal)

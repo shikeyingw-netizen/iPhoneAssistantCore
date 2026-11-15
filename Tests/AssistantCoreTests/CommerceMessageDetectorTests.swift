@@ -104,6 +104,56 @@ final class CommerceMessageDetectorTests: XCTestCase {
         XCTAssertEqual(messages[0].source, .directChat)
     }
 
+    func testRenderedBannerTextIsDetectedWhenAccessibilityTreeOmitsIt() {
+        let items = [
+            VisibleTextItem(
+                label: "拼多多商家版",
+                x: 71,
+                y: 53,
+                width: 91,
+                height: 16,
+                confidence: 1
+            ),
+            VisibleTextItem(
+                label: "[2条]**：客服自动回复测试2，请回复",
+                x: 72,
+                y: 70,
+                width: 254,
+                height: 20,
+                confidence: 0.5
+            ),
+            VisibleTextItem(
+                label: "测试成功",
+                x: 71,
+                y: 88,
+                width: 60,
+                height: 16,
+                confidence: 0.5
+            ),
+            VisibleTextItem(
+                label: "1分钟前",
+                x: 316,
+                y: 54,
+                width: 48,
+                height: 15,
+                confidence: 1
+            ),
+        ]
+
+        let messages = CommerceBannerTextParser.parse(
+            items,
+            capturedAt: Date(timeIntervalSince1970: 1_800_000_000)
+        )
+
+        XCTAssertEqual(messages.count, 1)
+        XCTAssertEqual(messages[0].platform, .pinduoduo)
+        XCTAssertEqual(
+            messages[0].text,
+            "[2条]**：客服自动回复测试2，请回复测试成功"
+        )
+        XCTAssertEqual(messages[0].actionX, 195)
+    }
+
     private func notificationSource() -> String {
         """
         Application, label: ' ', {{0, 0}, {390, 844}}
