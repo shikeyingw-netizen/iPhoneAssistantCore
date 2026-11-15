@@ -93,47 +93,47 @@ private final class FakeDeepSeekBridge: DeepSeekUIBridge, @unchecked Sendable {
     }
 
     func launch(bundleID: String) async throws {
-        lock.lock()
-        phase = .idle
-        lock.unlock()
+        lock.withLock {
+            phase = .idle
+        }
     }
 
     func snapshot(bundleID: String) async throws -> AccessibilitySnapshot {
-        lock.lock()
-        defer { lock.unlock() }
-        return AccessibilityTreeParser.parse(sourceLocked(), capturedAt: currentDate)
+        lock.withLock {
+            AccessibilityTreeParser.parse(sourceLocked(), capturedAt: currentDate)
+        }
     }
 
     func tap(x: Double, y: Double) async throws {
-        lock.lock()
-        phase = .sent
-        lock.unlock()
+        lock.withLock {
+            phase = .sent
+        }
     }
 
     func type(text: String, x: Double, y: Double, clear: Bool) async throws {
-        lock.lock()
-        typedPrompt = text
-        expectedToken = text.replacingOccurrences(of: "请只回复：", with: "")
-        phase = .typed
-        lock.unlock()
+        lock.withLock {
+            typedPrompt = text
+            expectedToken = text.replacingOccurrences(of: "请只回复：", with: "")
+            phase = .typed
+        }
     }
 
     func wait(seconds: Double) async throws {
-        lock.lock()
-        currentDate = currentDate.addingTimeInterval(seconds)
-        lock.unlock()
+        lock.withLock {
+            currentDate = currentDate.addingTimeInterval(seconds)
+        }
     }
 
     func now() -> Date {
-        lock.lock()
-        defer { lock.unlock() }
-        return currentDate
+        lock.withLock {
+            currentDate
+        }
     }
 
     func sourceContains(_ text: String) -> Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return sourceLocked().contains(text)
+        lock.withLock {
+            sourceLocked().contains(text)
+        }
     }
 
     private func sourceLocked() -> String {

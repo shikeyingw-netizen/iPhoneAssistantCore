@@ -52,7 +52,8 @@ final class SQLiteTaskQueueTests: XCTestCase {
             makeInput(
                 key: "high",
                 priority: .high,
-                createdAt: fixedDate.addingTimeInterval(1)
+                createdAt: fixedDate.addingTimeInterval(1),
+                availableAt: fixedDate
             )
         )
 
@@ -164,7 +165,8 @@ final class SQLiteTaskQueueTests: XCTestCase {
         key: String,
         priority: TakeoverPriority = .normal,
         question: String = "什么时候发货",
-        createdAt: Date? = nil
+        createdAt: Date? = nil,
+        availableAt: Date? = nil
     ) -> QueueTaskInput {
         let timestamp = createdAt ?? fixedDate
         return QueueTaskInput(
@@ -194,7 +196,7 @@ final class SQLiteTaskQueueTests: XCTestCase {
                 suggestedReply: "当天16:30前付款当天发货。"
             ),
             priority: priority,
-            availableAt: timestamp,
+            availableAt: availableAt ?? timestamp,
             createdAt: timestamp
         )
     }
