@@ -1,0 +1,40 @@
+name: Swift Core Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Run Swift tests
+        run: |
+          swift test --parallel
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-core-test-logs
+          path: |
+            .build/**/*.log
+            .build/**/*.txt
+          if-no-files-found: ignore

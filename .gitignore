@@ -1,0 +1,20 @@
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+*.log
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Never commit credentials, pairing records, or customer data.
+*.p12
+*.mobileprovision
+*.pem
+*.key
+secrets/
+token.json
+pairing*.json
+*.env
