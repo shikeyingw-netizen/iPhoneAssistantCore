@@ -1,0 +1,5 @@
+Run: https://github.com/shikeyingw-netizen/iPhoneAssistantCore/actions/runs/43735366060
+Commit: 6f982ac63adf4af3cbe3925b70950f0773b7aac2
+
+279:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Sources/AssistantCore/CommerceMessageDetector.swift:692:47: error: value of tuple type '(x: Double, y: Double, text: String)' has no member 'label'
+290:The following build commands failed:
