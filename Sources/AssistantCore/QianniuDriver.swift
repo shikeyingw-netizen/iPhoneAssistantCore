@@ -163,7 +163,9 @@ public actor QianniuDriver {
             throw QianniuDriverError.typedReplyNotVerified
         }
         let beforeCount = messageOccurrences(of: trimmed, in: before)
-        if keyboardIsVisible(before) {
+        if let send = keyboardSendButton(in: before) {
+            try await bridge.tap(x: send.centerX, y: send.centerY)
+        } else if keyboardIsVisible(before) {
             try await bridge.tap(x: 354, y: 702)
         } else {
             guard let send = sendButton(in: before) else {
@@ -198,6 +200,19 @@ public actor QianniuDriver {
                     && $0.height <= 56
             }
             .max(by: { $0.x < $1.x })
+    }
+
+    private func keyboardSendButton(
+        in snapshot: AccessibilitySnapshot
+    ) -> AccessibilityNode? {
+        snapshot.nodes
+            .filter {
+                $0.kind == "Button"
+                    && ($0.label == "发送" || $0.label == "send")
+                    && $0.x >= 280
+                    && $0.y >= 650
+            }
+            .max(by: { $0.y < $1.y })
     }
 
     private func keyboardIsVisible(
@@ -240,6 +255,10 @@ public actor QianniuDriver {
         if snapshot.source.contains("Key, label: 'space'"),
            snapshot.source.contains("Button, label: 'send'") {
             return .english
+        }
+        if snapshot.source.contains("Key, label: '空格'"),
+           snapshot.source.contains("Button, label: '发送'") {
+            return .chinese
         }
         if snapshot.source.contains("隐藏输入法"),
            snapshot.source.contains("数字键盘") {

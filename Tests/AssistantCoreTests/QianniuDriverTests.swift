@@ -195,8 +195,9 @@ private final class FakeQianniuBridge: AppUIBridge, @unchecked Sendable {
             """
         } else {
             keyboard = """
-              Other, label: '隐藏输入法', {{336, 502}, {54, 42}}
-              Other, label: '数字键盘', {{67, 716}, {81, 50}}
+              Keyboard, {{0, 553}, {390, 233}}
+                Key, label: '空格', id: 'space', {{97, 722}, {195, 46}}
+                Button, label: '发送', id: 'Send', {{292, 722}, {97, 46}}
               Button, label: '下一个键盘', value: 'English (US)', {{8, 775}, {68, 68}}
             """
         }
