@@ -689,7 +689,7 @@ public enum CommerceMessageDetector {
         else {
             return nil
         }
-        return (clean(customer), clean(latest.label))
+        return (clean(customer), clean(latest.text))
     }
 
     private static func pinduoduoCustomerName(
