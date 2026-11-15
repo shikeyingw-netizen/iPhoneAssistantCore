@@ -1,6 +1,10 @@
 .build/
 .swiftpm/
 DerivedData/
+build/
+Payload/
+*.xcodeproj/
+*.ipa
 *.xcuserstate
 xcuserdata/
 .DS_Store

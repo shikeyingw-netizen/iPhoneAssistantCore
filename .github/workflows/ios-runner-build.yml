@@ -1,0 +1,106 @@
+name: iOS Runner Build
+
+on:
+  push:
+    paths:
+      - "App/**"
+      - "Package.swift"
+      - "Sources/**"
+      - "project.yml"
+      - ".github/workflows/ios-runner-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build unsigned device app
+        shell: bash
+        run: |
+          set +e
+          xcodebuild \
+            -project iPhoneAssistant.xcodeproj \
+            -scheme iPhoneAssistantRunner \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee ios-build.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "## iOS runner build"
+            echo
+            echo "Exit code: ${status}"
+            echo
+            echo '```text'
+            tail -n 400 ios-build.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "${status}"
+
+      - name: Package unsigned IPA
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="build/Build/Products/Release-iphoneos/iPhoneAssistantRunner.app"
+          test -d "${app}"
+          rm -rf Payload
+          mkdir Payload
+          cp -R "${app}" Payload/
+          zip -qry iPhoneAssistantRunner-unsigned.ipa Payload
+
+      - name: Upload unsigned IPA
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iPhoneAssistantRunner-unsigned
+          path: iPhoneAssistantRunner-unsigned.ipa
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-runner-build-log
+          path: ios-build.log
+          if-no-files-found: ignore
+
+      - name: Publish iOS build failure report
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="${RUNNER_TEMP}/last-ios-build.txt"
+          {
+            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "Commit: ${GITHUB_SHA}"
+            echo
+            grep -nE 'error:|fatal error:|failed|warning:' ios-build.log \
+              | tail -n 500 \
+              || true
+          } > "${report}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan ios-ci-reports
+          git rm -rf .
+          mkdir -p ci
+          cp "${report}" ci/last-ios-build.txt
+          git add ci/last-ios-build.txt
+          git commit -m "Update iOS build failure report [skip ci]"
+          git push --force origin HEAD:ios-ci-reports

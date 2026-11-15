@@ -47,3 +47,20 @@ Run the package tests on a macOS host:
 ```bash
 swift test
 ```
+
+## Unsigned iOS Runner
+
+`project.yml` and the `App/` directory define a minimal installable iOS shell.
+The public GitHub Actions workflow `iOS Runner Build` generates the Xcode
+project with XcodeGen, builds an unsigned arm64 device app, and uploads:
+
+```text
+iPhoneAssistantRunner-unsigned.ipa
+```
+
+The package does not contain signing certificates, Apple account credentials,
+or pairing keys. Signing and installation remain on the iPhone through the
+chosen free sideloading workflow.
+
+This build proves packaging and launch scaffolding only. It does not enable
+continuous background UI automation.

@@ -1,0 +1,44 @@
+name: iPhoneAssistant
+
+options:
+  bundleIdPrefix: com.shikeyingw
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  AssistantCore:
+    path: .
+
+targets:
+  iPhoneAssistantRunner:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: App
+        excludes:
+          - Info.plist
+    dependencies:
+      - package: AssistantCore
+        product: AssistantCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shikeyingw.iPhoneAssistantRunner
+        PRODUCT_NAME: iPhoneAssistantRunner
+        INFOPLIST_FILE: App/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+
+schemes:
+  iPhoneAssistantRunner:
+    build:
+      targets:
+        iPhoneAssistantRunner: all
+    run:
+      config: Debug
+    archive:
+      config: Release
