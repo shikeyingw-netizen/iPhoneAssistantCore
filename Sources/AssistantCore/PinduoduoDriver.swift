@@ -186,7 +186,18 @@ public enum PinduoduoPageParser {
                 )
             }
         }
-        return rows.sorted { $0.centerY < $1.centerY }
+        var unique: [String: PinduoduoPendingRow] = [:]
+        for row in rows {
+            let key = row.storeName == "未知店铺"
+                ? row.identity
+                : "\(row.section)|\(row.storeName)"
+            if let existing = unique[key],
+               existing.marker != "other-store-section" {
+                continue
+            }
+            unique[key] = row
+        }
+        return unique.values.sorted { $0.centerY < $1.centerY }
     }
 
     private static func isDirectChat(_ snapshot: AccessibilitySnapshot) -> Bool {
