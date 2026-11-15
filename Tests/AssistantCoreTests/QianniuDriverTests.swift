@@ -30,6 +30,27 @@ final class QianniuDriverTests: XCTestCase {
         XCTAssertEqual(bridge.tapCount(), 1)
     }
 
+    func testDirectChatFindsComposerShiftedUpByKeyboard() {
+        let source = """
+        Application, label: '千牛', {{0, 0}, {390, 844}}
+          Button, label: 'back', {{12, 57}, {24, 24}}
+          Button, label: '客户乙', {{55, 59}, {64, 21}}
+          TextView, {{78, 429}, {168, 37}}
+          Button, {{246, 429}, {37, 37}}
+          Other, label: '隐藏输入法', {{336, 502}, {54, 42}}
+          Other, label: '数字键盘', {{67, 716}, {81, 50}}
+        """
+
+        let snapshot = AccessibilityTreeParser.parse(source)
+        let input = QianniuPageParser.input(in: snapshot)
+
+        XCTAssertEqual(
+            QianniuPageParser.parse(snapshot),
+            .directChat(customer: "客户乙")
+        )
+        XCTAssertEqual(input?.centerY, 447.5)
+    }
+
     func testSendWithoutVerificationBecomesUncertain() async throws {
         let bridge = FakeQianniuBridge(verifySend: false)
         let driver = QianniuDriver(bridge: bridge)

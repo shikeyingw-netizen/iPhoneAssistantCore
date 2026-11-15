@@ -23,7 +23,7 @@ public enum QianniuPageParser {
             .filter {
                 $0.kind == "TextView"
                     && $0.width >= 100
-                    && $0.y >= 700
+                    && $0.y >= 300
             }
             .max(by: { $0.y < $1.y })
     }
