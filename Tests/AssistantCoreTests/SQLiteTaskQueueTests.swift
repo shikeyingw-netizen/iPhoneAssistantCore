@@ -112,17 +112,14 @@ final class SQLiteTaskQueueTests: XCTestCase {
         }
 
         let moved = try await queue.escalateQueuedToManualReview()
+        let nextClaim = try await queue.claimNext(workerID: "test")
+        let firstState = try await queue.task(id: firstTask.id)?.state
+        let secondState = try await queue.task(id: secondTask.id)?.state
 
         XCTAssertEqual(moved, 2)
-        XCTAssertNil(try await queue.claimNext(workerID: "test"))
-        XCTAssertEqual(
-            try await queue.task(id: firstTask.id)?.state,
-            .manualReview
-        )
-        XCTAssertEqual(
-            try await queue.task(id: secondTask.id)?.state,
-            .manualReview
-        )
+        XCTAssertNil(nextClaim)
+        XCTAssertEqual(firstState, .manualReview)
+        XCTAssertEqual(secondState, .manualReview)
     }
 
     func testTaskSurvivesQueueReopen() async throws {
