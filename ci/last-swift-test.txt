@@ -1,0 +1,10 @@
+Run: https://github.com/shikeyingw-netizen/iPhoneAssistantCore/actions/runs/43809496138
+Commit: c56c21b2d44dfc653021046e2604a91b59d3ccc8
+
+143:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:91: error: -[AssistantCoreTests.DeepSeekAppDriverTests testCustomerTurnRequiresAndStripsCurrentTurnToken] : XCTAssertTrue failed
+144:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:92: error: -[AssistantCoreTests.DeepSeekAppDriverTests testCustomerTurnRequiresAndStripsCurrentTurnToken] : XCTAssertEqual failed: ("") is not equal to ("客服测试成功")
+145:/Users/runner/work/iPhoneAssistantCore/iPhoneAssistantCore/Tests/AssistantCoreTests/DeepSeekAppDriverTests.swift:93: error: -[AssistantCoreTests.DeepSeekAppDriverTests testCustomerTurnRequiresAndStripsCurrentTurnToken] : XCTAssertNil failed: "typed prompt not verified"
+146:Test Case '-[AssistantCoreTests.DeepSeekAppDriverTests testCustomerTurnRequiresAndStripsCurrentTurnToken]' failed (0.829 seconds).
+147:Test Suite 'DeepSeekAppDriverTests' failed at 2026-11-16 05:22:08.129.
+149:Test Suite 'iPhoneAssistantCorePackageTests.xctest' failed at 2026-11-16 05:22:08.129.
+151:Test Suite 'Selected tests' failed at 2026-11-16 05:22:08.129.
