@@ -90,7 +90,9 @@ public actor DeepSeekAppDriver {
             clear: true
         )
         var snapshot = try await bridge.snapshot(bundleID: configuration.bundleID)
-        guard snapshot.nodes(kind: "TextView").contains(where: { $0.value == prompt }) else {
+        guard snapshot.nodes(kind: "TextView").contains(where: {
+            normalizedInput($0.value) == normalizedInput(prompt)
+        }) else {
             return DeepSeekTurnResult(
                 success: false,
                 answer: "",
@@ -267,6 +269,13 @@ public actor DeepSeekAppDriver {
             source,
             ["登录后继续", "请登录", "验证码", "安全验证", "账号验证"]
         )
+    }
+
+    private func normalizedInput(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\n", with: "")
+            .components(separatedBy: .whitespacesAndNewlines)
+            .joined()
     }
 
     private func retained(_ previous: String?, in source: String) -> Bool {

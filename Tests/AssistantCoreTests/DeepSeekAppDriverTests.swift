@@ -186,9 +186,12 @@ private final class FakeDeepSeekBridge: DeepSeekUIBridge, @unchecked Sendable {
             \(historyLines())
             """
         case .typed:
+            let escapedPrompt = typedPrompt
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "\n", with: "\\n")
             return """
             Application, label: 'DeepSeek', {{0, 0}, {390, 844}}
-              TextView, value: '\(typedPrompt)', {{22, 704}, {346, 46}}
+              TextView, value: '\(escapedPrompt)', {{22, 704}, {346, 46}}
               Button, label: '发送', {{330, 418}, {36, 36}}
             \(historyLines())
             """
