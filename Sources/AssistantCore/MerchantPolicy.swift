@@ -195,4 +195,18 @@ public enum DeepSeekPromptBuilder {
         请直接给出客服回复，不要解释规则，不要添加引号或前缀。
         """
     }
+
+    public static func verifiedPrompt(
+        for context: ConversationContext,
+        turnToken: String
+    ) -> String {
+        """
+        \(prompt(for: context))
+
+        本次回复必须放在同一个文本气泡中，第一行只写校验码：
+        \(turnToken)
+        第二行开始只写给买家的最终客服正文。
+        校验码只用于本机识别本次回答，不得在正文中再次出现。
+        """
+    }
 }

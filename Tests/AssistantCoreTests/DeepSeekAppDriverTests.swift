@@ -67,7 +67,7 @@ final class DeepSeekAppDriverTests: XCTestCase {
         XCTAssertEqual(result.failureReason, "DeepSeek response timeout")
     }
 
-    func testCustomerTurnDetectsNewStableAnswerWithoutExpectedToken() async throws {
+    func testCustomerTurnRequiresAndStripsCurrentTurnToken() async throws {
         let bridge = FakeDeepSeekBridge()
         let driver = DeepSeekAppDriver(
             bridge: bridge,
@@ -78,8 +78,14 @@ final class DeepSeekAppDriverTests: XCTestCase {
             )
         )
 
+        let token = "WB1234567890AB"
         let result = try await driver.runCustomerTurn(
-            prompt: "请只回复：客服测试成功"
+            prompt: """
+            客服作答校验
+            \(token)
+            请回复客服测试成功
+            """,
+            turnToken: token
         )
 
         XCTAssertTrue(result.success)
@@ -105,6 +111,7 @@ private final class FakeDeepSeekBridge: DeepSeekUIBridge, @unchecked Sendable {
     private var phase: Phase = .idle
     private var typedPrompt = ""
     private var expectedToken = ""
+    private var verifiedCustomerPrompt = false
     private var history: [String] = []
     private var currentDate = Date(timeIntervalSince1970: 1_800_000_000)
 
@@ -133,7 +140,20 @@ private final class FakeDeepSeekBridge: DeepSeekUIBridge, @unchecked Sendable {
     func type(text: String, x: Double, y: Double, clear: Bool) async throws {
         lock.withLock {
             typedPrompt = text
-            expectedToken = text.replacingOccurrences(of: "请只回复：", with: "")
+            if
+                let match = text.range(
+                    of: #"WB[A-F0-9]{12}"#,
+                    options: .regularExpression
+                )
+            {
+                expectedToken = String(text[match])
+            } else {
+                expectedToken = text.replacingOccurrences(
+                    of: "请只回复：",
+                    with: ""
+                )
+            }
+            verifiedCustomerPrompt = text.contains("客服作答校验")
             phase = .typed
         }
     }
@@ -184,10 +204,13 @@ private final class FakeDeepSeekBridge: DeepSeekUIBridge, @unchecked Sendable {
             if !history.contains(expectedToken) {
                 history.append(expectedToken)
             }
+            let answerLabel = verifiedCustomerPrompt
+                ? "\(expectedToken) 客服测试成功"
+                : expectedToken
             return """
             Application, label: 'DeepSeek', {{0, 0}, {390, 844}}
               TextView, {{22, 704}, {346, 46}}
-              Other, label: '\(expectedToken)', {{24, 214}, {342, 28}}
+              Other, label: '\(answerLabel)', {{24, 214}, {342, 28}}
             \(historyLines())
             """
         }
