@@ -205,6 +205,28 @@ public actor SQLiteTaskQueue {
         )
     }
 
+    /// Manual takeover must never leave a stale backlog queued for automatic
+    /// sending. Every task that had not started is moved to manual review
+    /// before resume can be confirmed.
+    @discardableResult
+    public func escalateQueuedToManualReview(
+        note: String = "Manual takeover: queued task requires re-verification"
+    ) throws -> Int {
+        let statement = try database.prepare(
+            """
+            UPDATE tasks
+            SET state = ?, updated_at = ?, last_error = ?
+            WHERE state = ?
+            """
+        )
+        statement.bind(1, TaskState.manualReview.rawValue)
+        statement.bind(2, clock().timeIntervalSince1970)
+        statement.bind(3, note)
+        statement.bind(4, TaskState.queued.rawValue)
+        _ = try statement.step()
+        return database.changes
+    }
+
     public func task(id: UUID) throws -> QueuedTask? {
         let statement = try database.prepare("\(Self.selectSQL) WHERE id = ? LIMIT 1")
         statement.bind(1, id.uuidString)

@@ -99,6 +99,32 @@ final class SQLiteTaskQueueTests: XCTestCase {
         XCTAssertEqual(manual.map(\.id), [claimed.id])
     }
 
+    func testManualTakeoverEscalatesQueuedBacklog() async throws {
+        let fixture = try makeQueue()
+        defer { try? FileManager.default.removeItem(at: fixture.directory) }
+        let queue = fixture.queue
+        let first = try await queue.enqueue(makeInput(key: "queued-1"))
+        let second = try await queue.enqueue(makeInput(key: "queued-2"))
+        guard case let .inserted(firstTask) = first,
+              case let .inserted(secondTask) = second
+        else {
+            return XCTFail("fixture enqueue failed")
+        }
+
+        let moved = try await queue.escalateQueuedToManualReview()
+
+        XCTAssertEqual(moved, 2)
+        XCTAssertNil(try await queue.claimNext(workerID: "test"))
+        XCTAssertEqual(
+            try await queue.task(id: firstTask.id)?.state,
+            .manualReview
+        )
+        XCTAssertEqual(
+            try await queue.task(id: secondTask.id)?.state,
+            .manualReview
+        )
+    }
+
     func testTaskSurvivesQueueReopen() async throws {
         let fixture = try makeQueue()
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
